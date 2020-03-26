@@ -13,35 +13,35 @@ describe('App.vue', () => {
 
   describe('shipFactory()', () => {
     it('shipFactory returns ship', () => {
-      expect(wrapper.vm.shipFactory(2, ['B2', 'C2'])).toHaveProperty(
+      expect(wrapper.vm.shipFactory(2, ['12', '22'])).toHaveProperty(
         'length',
         2
       );
       expect(
-        wrapper.vm.shipFactory(2, ['B2', 'C2'])
-      ).toHaveProperty('positions', ['B2', 'C2']);
+        wrapper.vm.shipFactory(2, ['12', '22'])
+      ).toHaveProperty('positions', ['12', '22']);
     });
 
     it('hit() hits ship', () => {
-      let ship = wrapper.vm.shipFactory(1, ['C3']);
-      ship.hit('C3');
-      expect(ship.hitPositions).toEqual(['C3']);
+      let ship = wrapper.vm.shipFactory(1, ['23']);
+      ship.hit('23');
+      expect(ship.hitPositions).toEqual(['23']);
     });
 
     it('hit() misses ship', () => {
-      let ship = wrapper.vm.shipFactory(1, ['C3']);
-      ship.hit('C4');
+      let ship = wrapper.vm.shipFactory(1, ['23']);
+      ship.hit('24');
       expect(ship.hitPositions).toEqual([]);
     });
 
     it("isSunk() method doesn't sink ship", () => {
-      let ship = wrapper.vm.shipFactory(1, ['C3']);
+      let ship = wrapper.vm.shipFactory(1, ['23']);
       expect(ship.isSunk()).toBe(false);
     });
 
     it('isSunk() method sinks ship', () => {
-      let ship = wrapper.vm.shipFactory(1, ['C3']);
-      ship.hit('C3');
+      let ship = wrapper.vm.shipFactory(1, ['23']);
+      ship.hit('23');
       expect(ship.isSunk()).toBe(true);
     });
   });
@@ -57,38 +57,38 @@ describe('App.vue', () => {
 
     it('places ship', () => {
       let board = wrapper.vm.gameBoardFactory();
-      let ship = wrapper.vm.shipFactory(1, ['C2', 'C3']);
+      let ship = wrapper.vm.shipFactory(1, ['22', '23']);
       board.placeShip(ship);
       expect(board.ships).toContain(ship);
     });
 
     it('receives attack', () => {
       let board = wrapper.vm.gameBoardFactory();
-      let ship = wrapper.vm.shipFactory(1, ['C2', 'C3']);
+      let ship = wrapper.vm.shipFactory(1, ['22', '23']);
       board.placeShip(ship);
-      expect(board.receiveAttack('C2')).toBe('not sunk');
+      expect(board.receiveAttack('22')).toBe('not sunk');
       expect(board.missed).toEqual([]);
-      expect(board.ships[0].hitPositions).toEqual(['C2']);
+      expect(board.ships[0].hitPositions).toEqual(['22']);
       expect(board.ships[0].isSunk()).toBe(false);
     });
 
     it('logs missed attack', () => {
       let board = wrapper.vm.gameBoardFactory();
-      let ship = wrapper.vm.shipFactory(1, ['C2', 'C3']);
+      let ship = wrapper.vm.shipFactory(1, ['22', '23']);
       board.placeShip(ship);
-      board.receiveAttack('C4');
+      board.receiveAttack('24');
       expect(board.ships[0].hitPositions).toEqual([]);
-      expect(board.missed).toEqual(['C4']);
+      expect(board.missed).toEqual(['24']);
     });
 
     it('sinks ship', () => {
       let board = wrapper.vm.gameBoardFactory();
-      let ship = wrapper.vm.shipFactory(1, ['C2', 'C3']);
+      let ship = wrapper.vm.shipFactory(1, ['22', '23']);
       board.placeShip(ship);
-      expect(board.receiveAttack('C2')).toBe('not sunk');
-      expect(board.receiveAttack('C3')).toBe('sunk');
+      expect(board.receiveAttack('22')).toBe('not sunk');
+      expect(board.receiveAttack('23')).toBe('sunk');
       expect(board.missed).toEqual([]);
-      expect(board.ships[0].hitPositions).toEqual(['C2', 'C3']);
+      expect(board.ships[0].hitPositions).toEqual(['22', '23']);
       expect(board.ships[0].isSunk()).toBe(true);
     });
   });
@@ -100,12 +100,12 @@ describe('App.vue', () => {
 
     it('hits enemy ship', () => {
       let board = wrapper.vm.gameBoardFactory();
-      let ship = wrapper.vm.shipFactory(2, ['C2', 'C3']);
+      let ship = wrapper.vm.shipFactory(2, ['22', '23']);
       let player = wrapper.vm.player;
       board.placeShip(ship);
-      player.hit('C2', board);
+      player.hit('22', board);
       expect(board.missed).toEqual([]);
-      expect(board.ships[0].hitPositions).toEqual(['C2']);
+      expect(board.ships[0].hitPositions).toEqual(['22']);
       expect(board.ships[0].isSunk()).toBe(false);
     });
   });
@@ -113,7 +113,7 @@ describe('App.vue', () => {
   describe('Computer', () => {
     it('makes attack', () => {
       let board = wrapper.vm.gameBoardFactory();
-      let ship = wrapper.vm.shipFactory(2, ['C2', 'C3']);
+      let ship = wrapper.vm.shipFactory(2, ['22', '23']);
       let computer = wrapper.vm.computer;
       let characters = wrapper.vm.characters;
       board.placeShip(ship);

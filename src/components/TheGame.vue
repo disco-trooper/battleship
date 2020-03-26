@@ -5,22 +5,28 @@
         ><div class="grid-container">
           <div
             v-for="n in 100"
-            :id="coordinates(n)"
-            :key="n"
+            :id="getCoordinates(n)"
+            :key="getCoordinates(n)"
             class="cell"
-          ></div></div
-      ></v-card>
+          >
+            {{ getCoordinates(n) }}
+          </div>
+        </div></v-card
+      >
     </v-col>
     <v-col cols="6">
       <v-card class="mx-auto" width="330"
         ><div class="grid-container">
           <div
             v-for="n in 100"
-            :id="coordinates(n)"
-            :key="n"
+            :id="getCoordinates(n)"
+            :key="getCoordinates(n)"
             class="cell"
-          ></div></div
-      ></v-card>
+          >
+            {{ getCoordinates(n) }}
+          </div>
+        </div></v-card
+      >
     </v-col>
   </v-row>
 </template>
@@ -31,14 +37,13 @@ export default {
     return {};
   },
   methods: {
-    coordinates(n) {
-      let characters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+    getCoordinates(n) {
       if (n < 11) {
-        return 'A' + n.toString();
+        return '0' + (n - 1);
       } else if (n.toString()[1] === '0') {
-        return characters[n.toString()[0] - 1] + '1' + n.toString()[1];
-      } else if (n > 10) {
-        return characters[n.toString()[0]] + n.toString()[1];
+        return (n - 1).toString()[0] + '9';
+      } else {
+        return n.toString()[0] + (parseInt(n.toString()[1]) - 1);
       }
     },
   },

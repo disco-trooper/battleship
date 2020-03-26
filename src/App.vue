@@ -38,19 +38,7 @@ export default {
       },
     };
   },
-  created() {
-    for (let i = 0; i < 10; i++) {
-      console.log(this.getShipCoordinates(1, this.computerBoard));
-    }
-    // this.computerBoard.placeShip(this.ship);
-    // this.computerBoard.placeShip(this.ship2);
-    // console.log(
-    //   this.getAvailableSpots(
-    //     this.getArrayOfCoordinates(),
-    //     this.getUnavailableSpots(this.computerBoard)
-    //   )
-    // );
-  },
+  created() {},
   methods: {
     shipFactory(length, positions) {
       return {
@@ -103,7 +91,21 @@ export default {
         this.getUnavailableSpots(board)
       );
       let positions = [];
+      let direction;
       for (let i = 0; i < length; i++) {
+        let positionToTheRight =
+          i > 0
+            ? positions[i - 1][0] + (parseInt(positions[i - 1][1]) + 1)
+            : '';
+        let positionToTheLeft =
+          i > 0
+            ? positions[i - 1][0] + (parseInt(positions[i - 1][1]) - 1)
+            : '';
+        let positionToTheTop =
+          i > 0 ? parseInt(positions[i - 1][0]) - 1 + positions[i - 1][1] : '';
+        let positionToTheBottom =
+          i > 0 ? parseInt(positions[i - 1][0]) + 1 + positions[i - 1][1] : '';
+        // 1st coordinates
         if (positions.length === 0) {
           let randomPosition = this.getRandomNumber(
             0,
@@ -111,15 +113,95 @@ export default {
           );
           positions.push(availableSpots[randomPosition]);
           availableSpots.splice(randomPosition, 1);
-          // Try different coordinates
-        } else {
-          let positionToTheRight =
-            positions[i - 1][0] + parseInt(positions[i - 1][1] + 1);
-          if (availableSpots.includes(positionToTheRight)) {
-            positions.push(positionToTheRight);
-            availableSpots.filter(
-              (position) => position !== positionToTheRight
-            );
+          // 2nd coordinates
+        } else if (positions.length === 1) {
+          if (Math.random() > 0.5) {
+            if (availableSpots.includes(positionToTheRight)) {
+              direction = 'right';
+              positions.push(positionToTheRight);
+              availableSpots.filter(
+                (position) => position !== positionToTheRight
+              );
+            } else if (availableSpots.includes(positionToTheLeft)) {
+              direction = 'left';
+              positions.push(positionToTheLeft);
+              availableSpots.filter(
+                (position) => position !== positionToTheLeft
+              );
+            }
+          } else {
+            if (availableSpots.includes(positionToTheTop)) {
+              direction = 'top';
+              positions.push(positionToTheTop);
+              availableSpots.filter(
+                (position) => position !== positionToTheTop
+              );
+            } else if (availableSpots.includes(positionToTheBottom)) {
+              direction = 'bottom';
+              positions.push(positionToTheBottom);
+              availableSpots.filter(
+                (position) => position !== positionToTheBottom
+              );
+            }
+          }
+          // Rest of coordinates
+        } else if (positions.length > 1) {
+          if (direction === 'right') {
+            if (availableSpots.includes(positionToTheRight)) {
+              positions.push(positionToTheRight);
+              availableSpots.filter(
+                (position) => position !== positionToTheRight
+              );
+            } else {
+              positions.push(positions[0][0] + (parseInt(positions[0][1]) - 1));
+              availableSpots.filter(
+                (position) =>
+                  position !== positions[0][0] + (parseInt(positions[0][1]) - 1)
+              );
+              direction = 'left';
+            }
+          } else if (direction === 'left') {
+            if (availableSpots.includes(positionToTheLeft)) {
+              positions.push(positionToTheLeft);
+              availableSpots.filter(
+                (position) => position !== positionToTheLeft
+              );
+            } else {
+              positions.push(positions[0][0] + (parseInt(positions[0][1]) + 1));
+              availableSpots.filter(
+                (position) =>
+                  position !== positions[0][0] + (parseInt(positions[0][1]) + 1)
+              );
+              direction = 'right';
+            }
+          } else if (direction === 'top') {
+            if (availableSpots.includes(positionToTheTop)) {
+              positions.push(positionToTheTop);
+              availableSpots.filter(
+                (position) => position !== positionToTheTop
+              );
+            } else {
+              positions.push(parseInt(positions[0][0]) + 1 + positions[0][1]);
+              availableSpots.filter(
+                (position) =>
+                  position !== parseInt(positions[0][0]) + 1 + positions[0][1]
+              );
+              direction = 'bottom';
+            }
+          } else if (direction === 'bottom') {
+            if (availableSpots.includes(positionToTheBottom)) {
+              positions.push(positionToTheBottom);
+              availableSpots.filter(
+                (position) => position !== positionToTheBottom
+              );
+            } else {
+              positions.push(parseInt(positions[0][0]) - 1 + positions[0][1]);
+              availableSpots.filter(
+                (position) =>
+                  position !== parseInt(positions[0][0]) - 1 + positions[0][1]
+              );
+              direction = 'top';
+            }
           }
         }
       }

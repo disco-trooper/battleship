@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <v-content><the-game></the-game></v-content>
+    <v-content><the-game :computer-board="computerBoard"></the-game></v-content>
   </v-app>
 </template>
 
@@ -38,7 +38,27 @@ export default {
       },
     };
   },
-  created() {},
+  created() {
+    this.computerBoard.placeShip(
+      this.shipFactory(5, this.getShipCoordinates(5, this.computerBoard))
+    );
+    this.computerBoard.placeShip(
+      this.shipFactory(4, this.getShipCoordinates(4, this.computerBoard))
+    );
+    this.computerBoard.placeShip(
+      this.shipFactory(3, this.getShipCoordinates(3, this.computerBoard))
+    );
+    this.computerBoard.placeShip(
+      this.shipFactory(3, this.getShipCoordinates(3, this.computerBoard))
+    );
+    this.computerBoard.placeShip(
+      this.shipFactory(2, this.getShipCoordinates(2, this.computerBoard))
+    );
+
+    for (let ship in this.computerBoard.ships) {
+      console.log(this.computerBoard.ships[ship].positions);
+    }
+  },
   methods: {
     shipFactory(length, positions) {
       return {

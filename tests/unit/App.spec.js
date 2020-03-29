@@ -95,7 +95,8 @@ describe('App.vue', () => {
 
   describe('Player', () => {
     it('exists', () => {
-      expect(wrapper.vm.player).toBeDefined();
+      let player = wrapper.vm.player;
+      expect(player).toBeDefined();
     });
 
     it('hits enemy ship', () => {

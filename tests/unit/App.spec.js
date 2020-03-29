@@ -11,6 +11,16 @@ describe('App.vue', () => {
     expect(wrapper.isVueInstance()).toBe(true);
   });
 
+  it('getShipCoordinates() returns coordinates', () => {
+    let board = wrapper.vm.gameBoardFactory();
+    let ship = wrapper.vm.shipFactory(
+      5,
+      wrapper.vm.getShipCoordinates(5, board)
+    );
+    board.placeShip(ship);
+    expect(board.ships[0].positions.length).toBe(5);
+  });
+
   describe('shipFactory()', () => {
     it('shipFactory returns ship', () => {
       expect(wrapper.vm.shipFactory(2, ['12', '22'])).toHaveProperty(

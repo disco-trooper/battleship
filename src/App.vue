@@ -55,9 +55,9 @@ export default {
       this.shipFactory(2, this.getShipCoordinates(2, this.computerBoard))
     );
 
-    for (let ship in this.computerBoard.ships) {
-      console.log(this.computerBoard.ships[ship].positions);
-    }
+    // for (let ship in this.computerBoard.ships) {
+    //   console.log(this.computerBoard.ships[ship].positions);
+    // }
   },
   methods: {
     shipFactory(length, positions) {
@@ -113,18 +113,6 @@ export default {
       let positions = [];
       let direction;
       for (let i = 0; i < length; i++) {
-        let positionToTheRight =
-          i > 0
-            ? positions[i - 1][0] + (parseInt(positions[i - 1][1]) + 1)
-            : '';
-        let positionToTheLeft =
-          i > 0
-            ? positions[i - 1][0] + (parseInt(positions[i - 1][1]) - 1)
-            : '';
-        let positionToTheTop =
-          i > 0 ? parseInt(positions[i - 1][0]) - 1 + positions[i - 1][1] : '';
-        let positionToTheBottom =
-          i > 0 ? parseInt(positions[i - 1][0]) + 1 + positions[i - 1][1] : '';
         // 1st coordinates
         if (positions.length === 0) {
           let randomPosition = this.getRandomNumber(
@@ -135,6 +123,18 @@ export default {
           availableSpots.splice(randomPosition, 1);
           // 2nd coordinates
         } else if (positions.length === 1) {
+          let positionToTheRight =
+            positions[i - 1][0] + (parseInt(positions[i - 1][1]) + 1);
+
+          let positionToTheLeft =
+            positions[i - 1][0] + (parseInt(positions[i - 1][1]) - 1);
+
+          let positionToTheTop =
+            parseInt(positions[i - 1][0]) - 1 + positions[i - 1][1];
+
+          let positionToTheBottom =
+            parseInt(positions[i - 1][0]) + 1 + positions[i - 1][1];
+
           if (Math.random() > 0.5) {
             if (availableSpots.includes(positionToTheRight)) {
               direction = 'right';
@@ -166,6 +166,17 @@ export default {
           }
           // Rest of coordinates
         } else if (positions.length > 1) {
+          let positionToTheRight =
+            positions[i - 1][0] + (parseInt(positions[i - 1][1]) + 1);
+
+          let positionToTheLeft =
+            positions[i - 1][0] + (parseInt(positions[i - 1][1]) - 1);
+
+          let positionToTheTop =
+            parseInt(positions[i - 1][0]) - 1 + positions[i - 1][1];
+
+          let positionToTheBottom =
+            parseInt(positions[i - 1][0]) + 1 + positions[i - 1][1];
           if (direction === 'right') {
             if (availableSpots.includes(positionToTheRight)) {
               positions.push(positionToTheRight);

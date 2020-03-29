@@ -124,16 +124,16 @@ export default {
           // 2nd coordinates
         } else if (positions.length === 1) {
           let positionToTheRight =
-            positions[i - 1][0] + (parseInt(positions[i - 1][1]) + 1);
+            positions[0][0] + (parseInt(positions[0][1]) + 1);
 
           let positionToTheLeft =
-            positions[i - 1][0] + (parseInt(positions[i - 1][1]) - 1);
+            positions[0][0] + (parseInt(positions[0][1]) - 1);
 
           let positionToTheTop =
-            parseInt(positions[i - 1][0]) - 1 + positions[i - 1][1];
+            parseInt(positions[0][0]) - 1 + positions[0][1];
 
           let positionToTheBottom =
-            parseInt(positions[i - 1][0]) + 1 + positions[i - 1][1];
+            parseInt(positions[0][0]) + 1 + positions[0][1];
 
           if (Math.random() > 0.5) {
             if (availableSpots.includes(positionToTheRight)) {

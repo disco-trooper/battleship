@@ -23,13 +23,9 @@ describe('App.vue', () => {
 
   describe('shipFactory()', () => {
     it('shipFactory returns ship', () => {
-      expect(wrapper.vm.shipFactory(2, ['12', '22'])).toHaveProperty(
-        'length',
-        2
-      );
-      expect(
-        wrapper.vm.shipFactory(2, ['12', '22'])
-      ).toHaveProperty('positions', ['12', '22']);
+      let ship = wrapper.vm.shipFactory(2, ['12', '22']);
+      expect(ship).toHaveProperty('length', 2);
+      expect(ship).toHaveProperty('positions', ['12', '22']);
     });
 
     it('hit() hits ship', () => {

@@ -248,6 +248,9 @@ export default {
       if (positions.length !== length) {
         return this.getShipCoordinates(length, board);
       }
+      if (positions.some((position) => parseInt(position) > 99)) {
+        return this.getShipCoordinates(length, board);
+      }
       return positions.sort((a, b) => a - b);
     },
 

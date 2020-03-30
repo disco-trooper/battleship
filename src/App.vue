@@ -39,31 +39,19 @@ export default {
     };
   },
   created() {
-    this.computerBoard.placeShip(
-      this.shipFactory(5, this.getShipCoordinates(5, this.computerBoard))
-    );
-    this.computerBoard.placeShip(
-      this.shipFactory(4, this.getShipCoordinates(4, this.computerBoard))
-    );
-    this.computerBoard.placeShip(
-      this.shipFactory(3, this.getShipCoordinates(3, this.computerBoard))
-    );
-    this.computerBoard.placeShip(
-      this.shipFactory(3, this.getShipCoordinates(3, this.computerBoard))
-    );
-    this.computerBoard.placeShip(
-      this.shipFactory(2, this.getShipCoordinates(2, this.computerBoard))
-    );
-
-    // for (let ship in this.computerBoard.ships) {
-    //   console.log(this.computerBoard.ships[ship].positions);
-    // }
+    this.placeShips(this.computerBoard);
   },
   methods: {
     shipFactory(length, positions) {
       return {
         length,
         positions,
+        direction:
+          positions.length === 1
+            ? ''
+            : positions[0][0] === positions[1][0]
+            ? 'horizontal'
+            : 'vertical',
         hitPositions: [],
         hit(position) {
           if (this.positions.includes(position))
@@ -103,6 +91,24 @@ export default {
           this.ships.push(ship);
         },
       };
+    },
+
+    placeShips(board) {
+      board.placeShip(this.shipFactory(5, this.getShipCoordinates(5, board)));
+      board.placeShip(this.shipFactory(4, this.getShipCoordinates(4, board)));
+      board.placeShip(this.shipFactory(3, this.getShipCoordinates(3, board)));
+      board.placeShip(this.shipFactory(3, this.getShipCoordinates(3, board)));
+      board.placeShip(this.shipFactory(2, this.getShipCoordinates(2, board)));
+      let coordinates = [];
+      for (let ship in board.ships) {
+        coordinates.push(board.ships[ship].positions);
+      }
+      if (
+        coordinates.flat().length !== [...new Set(coordinates.flat())].length
+      ) {
+        board.ships = [];
+        this.placeShips(board);
+      }
     },
 
     getShipCoordinates(length, board) {
@@ -236,7 +242,13 @@ export default {
           }
         }
       }
-      return positions;
+      if (positions.some((position) => position.indexOf('-') !== -1)) {
+        return this.getShipCoordinates(length, board);
+      }
+      if (positions.length !== length) {
+        return this.getShipCoordinates(length, board);
+      }
+      return positions.sort((a, b) => a - b);
     },
 
     getAvailableSpots(arrayOfCoordinates, unavailableSpots) {

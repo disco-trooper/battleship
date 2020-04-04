@@ -1,10 +1,16 @@
 <template>
   <v-app>
-    <v-content><the-game :computer-board="computerBoard"></the-game></v-content>
+    <v-content
+      ><the-game
+        :player-board="playerBoard"
+        :computer-board="computerBoard"
+      ></the-game
+    ></v-content>
   </v-app>
 </template>
 
 <script>
+import { gameBoardHelper } from '../src/plugins/gameBoardHelper';
 import TheGame from './components/TheGame';
 
 export default {
@@ -12,8 +18,9 @@ export default {
   components: { TheGame },
   data() {
     return {
-      ship: this.shipFactory(2, ['01', '02']),
-      ship2: this.shipFactory(3, ['29', '39', '49']),
+      initialTopPosition: '',
+      initialLeftPosition: '',
+      movedShipID: '',
       computerBoard: this.gameBoardFactory(),
       playerBoard: this.gameBoardFactory(),
       player: {
@@ -39,11 +46,26 @@ export default {
     };
   },
   created() {
+    this.placeShips(this.playerBoard);
     this.placeShips(this.computerBoard);
   },
   methods: {
-    shipFactory(length, positions) {
+    updateCoordinates(newCoordinates) {
+      for (let ship in this.computerBoard.ships) {
+        if (this.computerBoard.ships[ship].id.toString() === this.movedShipID) {
+          this.computerBoard.ships[ship].positions = newCoordinates;
+        }
+      }
+      document.getElementById(
+        this.movedShipID
+      ).style.top = this.initialTopPosition;
+      document.getElementById(
+        this.movedShipID
+      ).style.left = this.initialLeftPosition;
+    },
+    shipFactory(length, positions, board = 0) {
       return {
+        id: board.ships.length,
         length,
         positions,
         direction:
@@ -94,11 +116,21 @@ export default {
     },
 
     placeShips(board) {
-      board.placeShip(this.shipFactory(5, this.getShipCoordinates(5, board)));
-      board.placeShip(this.shipFactory(4, this.getShipCoordinates(4, board)));
-      board.placeShip(this.shipFactory(3, this.getShipCoordinates(3, board)));
-      board.placeShip(this.shipFactory(3, this.getShipCoordinates(3, board)));
-      board.placeShip(this.shipFactory(2, this.getShipCoordinates(2, board)));
+      board.placeShip(
+        this.shipFactory(5, this.getShipCoordinates(5, board), board)
+      );
+      board.placeShip(
+        this.shipFactory(4, this.getShipCoordinates(4, board), board)
+      );
+      board.placeShip(
+        this.shipFactory(3, this.getShipCoordinates(3, board), board)
+      );
+      board.placeShip(
+        this.shipFactory(3, this.getShipCoordinates(3, board), board)
+      );
+      board.placeShip(
+        this.shipFactory(2, this.getShipCoordinates(2, board), board)
+      );
       let coordinates = [];
       for (let ship in board.ships) {
         coordinates.push(board.ships[ship].positions);
@@ -112,9 +144,9 @@ export default {
     },
 
     getShipCoordinates(length, board) {
-      let availableSpots = this.getAvailableSpots(
-        this.getArrayOfCoordinates(),
-        this.getUnavailableSpots(board)
+      let availableSpots = gameBoardHelper.getAvailableSpots(
+        gameBoardHelper.getArrayOfCoordinates(),
+        gameBoardHelper.getUnavailableSpots(board)
       );
       let positions = [];
       let direction;
@@ -252,42 +284,6 @@ export default {
         return this.getShipCoordinates(length, board);
       }
       return positions.sort((a, b) => a - b);
-    },
-
-    getAvailableSpots(arrayOfCoordinates, unavailableSpots) {
-      return arrayOfCoordinates.filter(
-        (position) => !unavailableSpots.includes(position)
-      );
-    },
-
-    getUnavailableSpots(board) {
-      let unavailableSpots = [];
-      for (let ship in board.ships) {
-        board.ships[ship].positions.forEach((position) => {
-          unavailableSpots.push(position);
-        });
-      }
-      return unavailableSpots;
-    },
-
-    getArrayOfCoordinates() {
-      let arrayOf100Numbers = [...Array(100).keys()].map((x) => ++x);
-      let arrayOfCoordinates = [];
-      for (let i = 0; i < arrayOf100Numbers.length; i++) {
-        if (arrayOf100Numbers[i] < 11) {
-          arrayOfCoordinates.push('0' + (arrayOf100Numbers[i] - 1));
-        } else if (arrayOf100Numbers[i].toString()[1] === '0') {
-          arrayOfCoordinates.push(
-            (arrayOf100Numbers[i] - 1).toString()[0] + '9'
-          );
-        } else {
-          arrayOfCoordinates.push(
-            arrayOf100Numbers[i].toString()[0] +
-              (parseInt(arrayOf100Numbers[i].toString()[1]) - 1)
-          );
-        }
-      }
-      return arrayOfCoordinates;
     },
 
     getRandomNumber(min, max) {

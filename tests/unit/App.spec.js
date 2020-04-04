@@ -15,7 +15,8 @@ describe('App.vue', () => {
     let board = wrapper.vm.gameBoardFactory();
     let ship = wrapper.vm.shipFactory(
       5,
-      wrapper.vm.getShipCoordinates(5, board)
+      wrapper.vm.getShipCoordinates(5, board),
+      board
     );
     board.placeShip(ship);
     expect(board.ships[0].positions.length).toBe(5);
@@ -23,30 +24,35 @@ describe('App.vue', () => {
 
   describe('shipFactory()', () => {
     it('shipFactory returns ship', () => {
-      let ship = wrapper.vm.shipFactory(2, ['12', '22']);
+      let board = wrapper.vm.gameBoardFactory();
+      let ship = wrapper.vm.shipFactory(2, ['12', '22'], board);
       expect(ship).toHaveProperty('length', 2);
       expect(ship).toHaveProperty('positions', ['12', '22']);
     });
 
     it('hit() hits ship', () => {
-      let ship = wrapper.vm.shipFactory(1, ['23']);
+      let board = wrapper.vm.gameBoardFactory();
+      let ship = wrapper.vm.shipFactory(1, ['23'], board);
       ship.hit('23');
       expect(ship.hitPositions).toEqual(['23']);
     });
 
     it('hit() misses ship', () => {
-      let ship = wrapper.vm.shipFactory(1, ['23']);
+      let board = wrapper.vm.gameBoardFactory();
+      let ship = wrapper.vm.shipFactory(1, ['23'], board);
       ship.hit('24');
       expect(ship.hitPositions).toEqual([]);
     });
 
     it("isSunk() method doesn't sink ship", () => {
-      let ship = wrapper.vm.shipFactory(1, ['23']);
+      let board = wrapper.vm.gameBoardFactory();
+      let ship = wrapper.vm.shipFactory(1, ['23'], board);
       expect(ship.isSunk()).toBe(false);
     });
 
     it('isSunk() method sinks ship', () => {
-      let ship = wrapper.vm.shipFactory(1, ['23']);
+      let board = wrapper.vm.gameBoardFactory();
+      let ship = wrapper.vm.shipFactory(1, ['23'], board);
       ship.hit('23');
       expect(ship.isSunk()).toBe(true);
     });
@@ -63,14 +69,14 @@ describe('App.vue', () => {
 
     it('places ship', () => {
       let board = wrapper.vm.gameBoardFactory();
-      let ship = wrapper.vm.shipFactory(1, ['22', '23']);
+      let ship = wrapper.vm.shipFactory(1, ['22', '23'], board);
       board.placeShip(ship);
       expect(board.ships).toContain(ship);
     });
 
     it('receives attack', () => {
       let board = wrapper.vm.gameBoardFactory();
-      let ship = wrapper.vm.shipFactory(1, ['22', '23']);
+      let ship = wrapper.vm.shipFactory(1, ['22', '23'], board);
       board.placeShip(ship);
       expect(board.receiveAttack('22')).toBe('not sunk');
       expect(board.missed).toEqual([]);
@@ -80,7 +86,7 @@ describe('App.vue', () => {
 
     it('logs missed attack', () => {
       let board = wrapper.vm.gameBoardFactory();
-      let ship = wrapper.vm.shipFactory(1, ['22', '23']);
+      let ship = wrapper.vm.shipFactory(1, ['22', '23'], board);
       board.placeShip(ship);
       board.receiveAttack('24');
       expect(board.ships[0].hitPositions).toEqual([]);
@@ -89,7 +95,7 @@ describe('App.vue', () => {
 
     it('sinks ship', () => {
       let board = wrapper.vm.gameBoardFactory();
-      let ship = wrapper.vm.shipFactory(1, ['22', '23']);
+      let ship = wrapper.vm.shipFactory(1, ['22', '23'], board);
       board.placeShip(ship);
       expect(board.receiveAttack('22')).toBe('not sunk');
       expect(board.receiveAttack('23')).toBe('sunk');
@@ -107,12 +113,12 @@ describe('App.vue', () => {
 
     it('hits enemy ship', () => {
       let board = wrapper.vm.gameBoardFactory();
-      let ship = wrapper.vm.shipFactory(2, ['22', '23']);
+      let ship = wrapper.vm.shipFactory(2, ['22', '23'], board);
       let player = wrapper.vm.player;
       board.placeShip(ship);
       player.hit('22', board);
       expect(board.missed).toEqual([]);
-      expect(board.ships[0].hitPositions).toEqual(['22']);
+      expect(board.ships[0].hitPositions).toEqual(['22'], board);
       expect(board.ships[0].isSunk()).toBe(false);
     });
   });
@@ -120,7 +126,7 @@ describe('App.vue', () => {
   describe('Computer', () => {
     it('makes attack', () => {
       let board = wrapper.vm.gameBoardFactory();
-      let ship = wrapper.vm.shipFactory(2, ['22', '23']);
+      let ship = wrapper.vm.shipFactory(2, ['22', '23'], board);
       let computer = wrapper.vm.computer;
       let characters = wrapper.vm.characters;
       board.placeShip(ship);

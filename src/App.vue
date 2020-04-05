@@ -4,6 +4,8 @@
       ><the-game
         :player-board="playerBoard"
         :computer-board="computerBoard"
+        :placing-ships="placingShips"
+        @shipMove="log"
       ></the-game
     ></v-content>
   </v-app>
@@ -18,9 +20,7 @@ export default {
   components: { TheGame },
   data() {
     return {
-      initialTopPosition: '',
-      initialLeftPosition: '',
-      movedShipID: '',
+      placingShips: true,
       computerBoard: this.gameBoardFactory(),
       playerBoard: this.gameBoardFactory(),
       player: {
@@ -50,19 +50,11 @@ export default {
     this.placeShips(this.computerBoard);
   },
   methods: {
-    updateCoordinates(newCoordinates) {
-      for (let ship in this.computerBoard.ships) {
-        if (this.computerBoard.ships[ship].id.toString() === this.movedShipID) {
-          this.computerBoard.ships[ship].positions = newCoordinates;
-        }
-      }
-      document.getElementById(
-        this.movedShipID
-      ).style.top = this.initialTopPosition;
-      document.getElementById(
-        this.movedShipID
-      ).style.left = this.initialLeftPosition;
+    log() {
+      console.log(this.playerBoard);
+      console.log(this.computerBoard);
     },
+
     shipFactory(length, positions, board = 0) {
       return {
         id: board.ships.length,
@@ -117,19 +109,19 @@ export default {
 
     placeShips(board) {
       board.placeShip(
-        this.shipFactory(5, this.getShipCoordinates(5, board), board)
+        this.shipFactory(5, this.generateShipCoordinates(5, board), board)
       );
       board.placeShip(
-        this.shipFactory(4, this.getShipCoordinates(4, board), board)
+        this.shipFactory(4, this.generateShipCoordinates(4, board), board)
       );
       board.placeShip(
-        this.shipFactory(3, this.getShipCoordinates(3, board), board)
+        this.shipFactory(3, this.generateShipCoordinates(3, board), board)
       );
       board.placeShip(
-        this.shipFactory(3, this.getShipCoordinates(3, board), board)
+        this.shipFactory(3, this.generateShipCoordinates(3, board), board)
       );
       board.placeShip(
-        this.shipFactory(2, this.getShipCoordinates(2, board), board)
+        this.shipFactory(2, this.generateShipCoordinates(2, board), board)
       );
       let coordinates = [];
       for (let ship in board.ships) {
@@ -143,7 +135,7 @@ export default {
       }
     },
 
-    getShipCoordinates(length, board) {
+    generateShipCoordinates(length, board) {
       let availableSpots = gameBoardHelper.getAvailableSpots(
         gameBoardHelper.getArrayOfCoordinates(),
         gameBoardHelper.getUnavailableSpots(board)
@@ -275,13 +267,13 @@ export default {
         }
       }
       if (positions.some((position) => position.indexOf('-') !== -1)) {
-        return this.getShipCoordinates(length, board);
+        return this.generateShipCoordinates(length, board);
       }
       if (positions.length !== length) {
-        return this.getShipCoordinates(length, board);
+        return this.generateShipCoordinates(length, board);
       }
       if (positions.some((position) => parseInt(position) > 99)) {
-        return this.getShipCoordinates(length, board);
+        return this.generateShipCoordinates(length, board);
       }
       return positions.sort((a, b) => a - b);
     },

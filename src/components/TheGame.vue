@@ -1,51 +1,103 @@
 <template>
-  <v-row justify="center">
-    <v-col cols="6">
-      <v-card class="mx-auto" width="320">
-        <div class="grid">
-          <div v-for="n in 100" :key="getCoordinates(n)" class="gridCell"></div>
-          <div
-            v-for="(ship, index) in playerBoard.ships"
-            :id="index"
-            :key="index"
-            :data-length="ship.length"
-            :data-direction="ship.direction"
-            :style="{
-              top: parseInt(ship.positions[0][0]) * 32 + 'px',
-              left: parseInt(ship.positions[0][1]) * 32 + 'px',
-              width:
-                ship.direction === 'horizontal'
-                  ? (parseInt(ship.positions[ship.positions.length - 1][1]) -
-                      parseInt(ship.positions[0][1]) +
-                      1) *
-                      32 +
-                    1 +
-                    'px'
-                  : '33px',
-              height:
-                ship.direction === 'vertical'
-                  ? (parseInt(ship.positions[ship.positions.length - 1][0]) -
-                      parseInt(ship.positions[0][0]) +
-                      1) *
-                      32 +
-                    1 +
-                    'px'
-                  : '33px',
-              opacity: '0.7',
-            }"
-            class="ship gridSnap"
-          ></div>
-        </div>
-      </v-card>
-    </v-col>
-    <v-col cols="6">
-      <v-card class="mx-auto" width="320">
-        <div class="grid">
-          <div v-for="n in 100" :key="getCoordinates(n)" class="gridCell"></div>
-        </div>
-      </v-card>
-    </v-col>
-  </v-row>
+  <v-container>
+    <v-row>
+      <div class="mx-auto">
+        <v-alert outlined gray type="info">Place the ships</v-alert>
+      </div>
+    </v-row>
+    <v-row justify="center">
+      <v-col cols="6">
+        <v-card class="mx-auto mt-5 mr-12" width="320">
+          <div class="xCoords">A</div>
+          <div class="xCoords">B</div>
+          <div class="xCoords">C</div>
+          <div class="xCoords">D</div>
+          <div class="xCoords">E</div>
+          <div class="xCoords">F</div>
+          <div class="xCoords">G</div>
+          <div class="xCoords">H</div>
+          <div class="xCoords">I</div>
+          <div class="xCoords">J</div>
+          <div class="grid">
+            <div
+              v-for="n in 100"
+              :key="getCoordinates(n)"
+              class="gridCell"
+              v-html="
+                getNumber(getCoordinates(n)) !== false
+                  ? getNumber(getCoordinates(n))
+                  : ''
+              "
+            ></div>
+            <div
+              v-for="(ship, index) in playerBoard.ships"
+              :id="index"
+              :key="index"
+              :data-length="ship.length"
+              :data-direction="ship.direction"
+              :style="{
+                top: parseInt(ship.positions[0][0]) * 32 + 'px',
+                left: parseInt(ship.positions[0][1]) * 32 + 'px',
+                width:
+                  ship.direction === 'horizontal'
+                    ? (parseInt(ship.positions[ship.positions.length - 1][1]) -
+                        parseInt(ship.positions[0][1]) +
+                        1) *
+                        32 +
+                      1 +
+                      'px'
+                    : '33px',
+                height:
+                  ship.direction === 'vertical'
+                    ? (parseInt(ship.positions[ship.positions.length - 1][0]) -
+                        parseInt(ship.positions[0][0]) +
+                        1) *
+                        32 +
+                      1 +
+                      'px'
+                    : '33px',
+                opacity: '0.7',
+              }"
+              class="ship"
+              :class="{ gridSnap: placingShips, moveCursor: placingShips }"
+            ></div>
+          </div>
+        </v-card>
+      </v-col>
+      <v-col cols="6">
+        <v-card class="mx-auto mt-5 ml-12" width="320">
+          <div class="xCoords">A</div>
+          <div class="xCoords">B</div>
+          <div class="xCoords">C</div>
+          <div class="xCoords">D</div>
+          <div class="xCoords">E</div>
+          <div class="xCoords">F</div>
+          <div class="xCoords">G</div>
+          <div class="xCoords">H</div>
+          <div class="xCoords">I</div>
+          <div class="xCoords">J</div>
+          <div class="grid">
+            <div
+              v-for="n in 100"
+              :key="getCoordinates(n)"
+              class="gridCell"
+              v-html="
+                getNumber(getCoordinates(n)) !== false
+                  ? getNumber(getCoordinates(n))
+                  : ''
+              "
+            ></div>
+          </div>
+        </v-card>
+      </v-col>
+    </v-row>
+    <v-row
+      ><div class="mx-auto mt-7">
+        <v-btn text color="primary">Start Game</v-btn
+        ><v-btn text>Reset Game</v-btn>
+      </div></v-row
+    >
+  </v-container>
 </template>
 
 <script>
@@ -61,11 +113,13 @@ export default {
       type: Object,
       required: true,
     },
+    placingShips: {
+      type: Boolean,
+      required: true,
+    },
   },
   data() {
-    return {
-      shipID: '',
-    };
+    return {};
   },
   created() {
     console.log('Reload');
@@ -161,7 +215,9 @@ export default {
           ship[0].positions = newCoordinates;
           eventTarget.style.webkitTransform = eventTarget.style.transform =
             'translate(' + 0 + 'px, ' + 0 + 'px)';
+          that.$emit('shipMove', that.playerBoard);
         }
+
         x = 0;
         y = 0;
       });
@@ -176,6 +232,16 @@ export default {
       } else {
         return n.toString()[0] + (parseInt(n.toString()[1]) - 1);
       }
+    },
+    getNumber(coords) {
+      if (coords === '00') return '<span class="yCoords">1</span>';
+      else if (parseInt(coords) % 10 === 0)
+        return (
+          '<span class="yCoords">' +
+          (parseInt(coords[0]) + 1).toString() +
+          '</span>'
+        );
+      else return false;
     },
   },
 };
@@ -216,6 +282,16 @@ export default {
   touch-action: none;
 }
 
+.xCoords {
+  display: inline-block;
+  width: 32px;
+  text-align: center;
+}
+
+.yCoords {
+  margin: -22px;
+}
+
 .grid {
   grid-template-columns: repeat(10, 32px);
   grid-template-rows: repeat(10, 32px);
@@ -235,6 +311,10 @@ export default {
   position: absolute;
   border: 2px solid rgb(0, 0, 255);
   background-color: rgba(0, 0, 255, 0.05);
+  z-index: 4;
+}
+
+.moveCursor {
   cursor: move;
 }
 

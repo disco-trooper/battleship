@@ -12,7 +12,7 @@
           playerBoard = gameBoardFactory();
           placeShips(playerBoard);
           placeShips(computerBoard);
-          removeHitNMissClasses();
+          removeClasses();
         "
       ></the-game
     ></v-content>
@@ -143,11 +143,19 @@ export default {
       }
       return;
     },
-    removeHitNMissClasses() {
+
+    removeClasses() {
       let cells = document.getElementsByClassName('gridCell');
       cells.forEach((cell) => {
         cell.className = 'gridCell';
       });
+      for (let i = 0; i < 5; i++) {
+        const shipID = i;
+        const shipParts = document.getElementById('smallShip' + shipID);
+        shipParts.children.forEach((part) => {
+          part.className = 'ship-part';
+        });
+      }
     },
 
     generateShipCoordinates(length, board) {

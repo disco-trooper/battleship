@@ -6,13 +6,19 @@
         Battleship
       </div>
     </v-row>
-    <v-row
-      ><div class="mx-auto mb-n6">
-        <v-alert v-show="gameFlow.placingShips" outlined gray type="info"
-          >Place the ships</v-alert
-        >
-      </div></v-row
-    >
+    <v-row>
+      <div class="mx-auto mb-n6">
+        <v-alert v-show="gameFlow.placingShips" outlined type="info">
+          Place the ships
+        </v-alert>
+        <v-alert v-show="gameFlow.playerWin" outlined gray type="success">
+          You have won!
+        </v-alert>
+        <v-alert v-show="gameFlow.computerWin" outlined gray type="error">
+          Computer has won!
+        </v-alert>
+      </div>
+    </v-row>
     <v-row justify="center">
       <v-col cols="12" md="6">
         <v-card class="mx-auto mt-5 mr-md-12" width="320">
@@ -69,7 +75,7 @@
                 gridSnap: gameFlow.placingShips,
                 moveCursor: gameFlow.placingShips,
               }"
-              @dblclick="rotate($event)"
+              @dblclick="rotateShip($event)"
             ></div>
           </div>
         </v-card>
@@ -152,6 +158,8 @@
             gameFlow.gameStarted = true;
             gameFlow.placingShips = false;
             gameFlow.playerTurn = true;
+            gameFlow.playerWin = false;
+            gameFlow.computerWin = false;
           "
           >Start Game</v-btn
         ><v-btn
@@ -161,6 +169,8 @@
             gameFlow.gameStarted = false;
             gameFlow.placingShips = true;
             gameFlow.playerTurn = false;
+            gameFlow.playerWin = false;
+            gameFlow.computerWin = false;
             $emit('resetGame');
           "
           >Reset Game</v-btn
@@ -199,12 +209,8 @@ export default {
   data() {
     return {};
   },
-  created() {
-    console.log('Reload');
-  },
   mounted() {
     // Drag 'n Snapping
-    console.log(this.computerBoard.ships);
     const that = this;
     let x = 0;
     let y = 0;
@@ -301,7 +307,7 @@ export default {
   },
 
   methods: {
-    rotate(event) {
+    rotateShip(event) {
       if (this.gameFlow.gameStarted) return;
       let availableSpots = gameBoardHelper.getAvailableSpots(
         gameBoardHelper.getArrayOfCoordinates(),
@@ -357,6 +363,7 @@ export default {
         event.target.setAttribute('data-direction', 'vertical');
       }
     },
+
     attack(coordinates) {
       if (this.gameFlow.playerTurn === true) {
         const preHitComputerMissedLength = this.computerBoard.missedHits.length;
@@ -381,7 +388,6 @@ export default {
         }
         if (this.computerBoard.takenHits.length === 17) {
           this.gameFlow.playerWin = true;
-          this.gameFlow.playerTurn = false;
           return;
         }
         return;
@@ -407,6 +413,7 @@ export default {
       }
       return this.computerAttack(computerObject, gameFlowObject, board);
     },
+
     toggleHoverClass(boolean, event) {
       if (
         boolean === true &&
@@ -418,6 +425,7 @@ export default {
         event.target.classList.add('hover');
       else if (boolean === false) event.target.classList.remove('hover');
     },
+
     getCoordinates(n) {
       if (n < 11) {
         return '0' + (n - 1);
@@ -427,6 +435,7 @@ export default {
         return n.toString()[0] + (parseInt(n.toString()[1]) - 1);
       }
     },
+
     getNumber(coords) {
       if (coords === '00') return '1';
       else if (parseInt(coords) % 10 === 0)

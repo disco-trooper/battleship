@@ -1,13 +1,21 @@
+/* eslint-disable vue/no-v-html */
 <template>
   <v-container>
     <v-row>
-      <div class="mx-auto">
-        <v-alert outlined gray type="info">Place the ships</v-alert>
+      <div class="mx-auto mt-3 mb-3 display-1 font-weight-light">
+        Battleship
       </div>
     </v-row>
+    <v-row
+      ><div class="mx-auto mb-n6">
+        <v-alert v-show="gameFlow.placingShips" outlined gray type="info"
+          >Place the ships</v-alert
+        >
+      </div></v-row
+    >
     <v-row justify="center">
-      <v-col cols="6">
-        <v-card class="mx-auto mt-5 mr-12" width="320">
+      <v-col cols="12" md="6">
+        <v-card class="mx-auto mt-5 mr-md-12" width="320">
           <div class="xCoords">A</div>
           <div class="xCoords">B</div>
           <div class="xCoords">C</div>
@@ -21,14 +29,12 @@
           <div class="grid">
             <div
               v-for="n in 100"
+              :id="'P' + getCoordinates(n)"
               :key="getCoordinates(n)"
               class="gridCell"
-              v-html="
-                getNumber(getCoordinates(n)) !== false
-                  ? getNumber(getCoordinates(n))
-                  : ''
-              "
-            ></div>
+            >
+              <span class="yCoords">{{ getNumber(getCoordinates(n)) }}</span>
+            </div>
             <div
               v-for="(ship, index) in playerBoard.ships"
               :id="index"
@@ -59,13 +65,17 @@
                 opacity: '0.7',
               }"
               class="ship"
-              :class="{ gridSnap: placingShips, moveCursor: placingShips }"
+              :class="{
+                gridSnap: gameFlow.placingShips,
+                moveCursor: gameFlow.placingShips,
+              }"
+              @dblclick="rotate($event)"
             ></div>
           </div>
         </v-card>
       </v-col>
-      <v-col cols="6">
-        <v-card class="mx-auto mt-5 ml-12" width="320">
+      <v-col cols="12" md="6">
+        <v-card class="mx-auto mt-5 ml-md-12" width="320">
           <div class="xCoords">A</div>
           <div class="xCoords">B</div>
           <div class="xCoords">C</div>
@@ -76,25 +86,85 @@
           <div class="xCoords">H</div>
           <div class="xCoords">I</div>
           <div class="xCoords">J</div>
-          <div class="grid">
+          <div class="grid PC">
             <div
               v-for="n in 100"
+              :id="getCoordinates(n)"
               :key="getCoordinates(n)"
               class="gridCell"
-              v-html="
-                getNumber(getCoordinates(n)) !== false
-                  ? getNumber(getCoordinates(n))
-                  : ''
-              "
-            ></div>
+              :class="{ targetCursor: gameFlow.gameStarted }"
+              @mouseenter="toggleHoverClass(true, $event)"
+              @mouseleave="toggleHoverClass(false, $event)"
+              @click="attack(getCoordinates(n))"
+            >
+              <span class="yCoords">{{ getNumber(getCoordinates(n)) }}</span>
+            </div>
           </div>
         </v-card>
       </v-col>
+      <div class="ship-types">
+        <div>
+          <span id="smallShip0" class="ship-little">
+            <span class="ship-part"></span>
+            <span class="ship-part"></span>
+            <span class="ship-part"></span>
+            <span class="ship-part"></span>
+            <span class="ship-part"></span>
+          </span>
+        </div>
+        <div>
+          <span id="smallShip1" class="ship-little">
+            <span class="ship-part"></span>
+            <span class="ship-part"></span>
+            <span class="ship-part"></span>
+            <span class="ship-part"></span>
+          </span>
+        </div>
+        <div>
+          <span id="smallShip2" class="ship-little">
+            <span class="ship-part"></span>
+            <span class="ship-part"></span>
+            <span class="ship-part"></span>
+          </span>
+        </div>
+        <div>
+          <span id="smallShip3" class="ship-little">
+            <span class="ship-part"></span>
+            <span class="ship-part"></span>
+            <span class="ship-part"></span>
+          </span>
+        </div>
+        <div>
+          <span id="smallShip4" class="ship-little">
+            <span class="ship-part"></span>
+            <span class="ship-part"></span>
+          </span>
+        </div>
+      </div>
     </v-row>
     <v-row
       ><div class="mx-auto mt-7">
-        <v-btn text color="primary">Start Game</v-btn
-        ><v-btn text>Reset Game</v-btn>
+        <v-btn
+          v-if="!gameFlow.gameStarted"
+          text
+          color="primary"
+          @click="
+            gameFlow.gameStarted = true;
+            gameFlow.placingShips = false;
+            gameFlow.playerTurn = true;
+          "
+          >Start Game</v-btn
+        ><v-btn
+          v-if="gameFlow.gameStarted"
+          text
+          @click="
+            gameFlow.gameStarted = false;
+            gameFlow.placingShips = true;
+            gameFlow.playerTurn = false;
+            $emit('resetGame');
+          "
+          >Reset Game</v-btn
+        >
       </div></v-row
     >
   </v-container>
@@ -113,8 +183,16 @@ export default {
       type: Object,
       required: true,
     },
-    placingShips: {
-      type: Boolean,
+    gameFlow: {
+      type: Object,
+      required: true,
+    },
+    player: {
+      type: Object,
+      required: true,
+    },
+    computer: {
+      type: Object,
       required: true,
     },
   },
@@ -126,6 +204,7 @@ export default {
   },
   mounted() {
     // Drag 'n Snapping
+    console.log(this.computerBoard.ships);
     const that = this;
     let x = 0;
     let y = 0;
@@ -215,15 +294,130 @@ export default {
           ship[0].positions = newCoordinates;
           eventTarget.style.webkitTransform = eventTarget.style.transform =
             'translate(' + 0 + 'px, ' + 0 + 'px)';
-          that.$emit('shipMove', that.playerBoard);
         }
-
         x = 0;
         y = 0;
       });
   },
 
   methods: {
+    rotate(event) {
+      if (this.gameFlow.gameStarted) return;
+      let availableSpots = gameBoardHelper.getAvailableSpots(
+        gameBoardHelper.getArrayOfCoordinates(),
+        gameBoardHelper.getUnavailableSpots(this.playerBoard)
+      );
+      const positions = this.playerBoard.ships.filter((obj) => {
+        return obj.id === parseInt(event.target.getAttribute('id'));
+      })[0].positions;
+      availableSpots.push(positions[0]);
+      if (event.target.getAttribute('data-direction') === 'vertical') {
+        let newPositions = [];
+        for (let i = 0; i < positions.length; i++) {
+          if (i === 0) newPositions.push(positions[0]);
+          else
+            newPositions.push(
+              positions[0][0].toString() + (parseInt(positions[0][1]) + i)
+            );
+        }
+        if (
+          newPositions.some((position) => !availableSpots.includes(position))
+        ) {
+          return;
+        }
+        [event.target.style.width, event.target.style.height] = [
+          event.target.style.height,
+          event.target.style.width,
+        ];
+        this.playerBoard.ships[
+          parseInt(event.target.getAttribute('id'))
+        ].positions = newPositions;
+        event.target.setAttribute('data-direction', 'horizontal');
+      } else if (event.target.getAttribute('data-direction') === 'horizontal') {
+        let newPositions = [];
+        for (let i = 0; i < positions.length; i++) {
+          if (i === 0) newPositions.push(positions[0]);
+          else
+            newPositions.push(
+              parseInt(positions[0][0]) + i + positions[0][1].toString()
+            );
+        }
+        if (
+          newPositions.some((position) => !availableSpots.includes(position))
+        ) {
+          return;
+        }
+        [event.target.style.width, event.target.style.height] = [
+          event.target.style.height,
+          event.target.style.width,
+        ];
+        this.playerBoard.ships[
+          parseInt(event.target.getAttribute('id'))
+        ].positions = newPositions;
+        event.target.setAttribute('data-direction', 'vertical');
+      }
+    },
+    attack(coordinates) {
+      if (this.gameFlow.playerTurn === true) {
+        const preHitComputerMissedLength = this.computerBoard.missedHits.length;
+        this.player.hit(coordinates, this.computerBoard);
+        const afterHitComputerMissedLength = this.computerBoard.missedHits
+          .length;
+        if (preHitComputerMissedLength !== afterHitComputerMissedLength) {
+          document.getElementById(coordinates).classList.add('miss');
+          this.gameFlow.playerTurn = false;
+          this.computerAttack(this.computer, this.gameFlow, this.playerBoard);
+          return;
+        }
+        document.getElementById(coordinates).classList.add('hit');
+        for (let ship in this.computerBoard.ships) {
+          if (this.computerBoard.ships[ship].isSunk() === true) {
+            const shipID = this.computerBoard.ships[ship].id;
+            const shipParts = document.getElementById('smallShip' + shipID);
+            shipParts.children.forEach((part) => {
+              part.className = 'ship-part-killed';
+            });
+          }
+        }
+        if (this.computerBoard.takenHits.length === 17) {
+          this.gameFlow.playerWin = true;
+          this.gameFlow.playerTurn = false;
+          return;
+        }
+        return;
+      }
+    },
+    computerAttack(computerObject, gameFlowObject, board) {
+      const preHitPlayerMissedLength = board.missedHits.length;
+      computerObject.makeAttack(board);
+      const afterHitPlayerMissedLength = board.missedHits.length;
+      if (preHitPlayerMissedLength !== afterHitPlayerMissedLength) {
+        document
+          .getElementById('P' + board.missedHits[board.missedHits.length - 1])
+          .classList.add('miss');
+        gameFlowObject.playerTurn = true;
+        return;
+      }
+      document
+        .getElementById('P' + board.takenHits[board.takenHits.length - 1])
+        .classList.add('hit');
+      if (this.playerBoard.takenHits.length === 17) {
+        this.gameFlow.computerWin = true;
+        return;
+      }
+      return this.computerAttack(computerObject, gameFlowObject, board);
+    },
+    toggleHoverClass(boolean, event) {
+      if (
+        boolean === true &&
+        this.gameFlow.gameStarted &&
+        this.gameFlow.playerTurn === true &&
+        !event.target.classList.contains('hit') &&
+        !event.target.classList.contains('miss')
+      )
+        event.target.classList.add('hover');
+      else if (boolean === false) event.target.classList.remove('hover');
+    },
     getCoordinates(n) {
       if (n < 11) {
         return '0' + (n - 1);
@@ -234,26 +428,197 @@ export default {
       }
     },
     getNumber(coords) {
-      if (coords === '00') return '<span class="yCoords">1</span>';
+      if (coords === '00') return '1';
       else if (parseInt(coords) % 10 === 0)
-        return (
-          '<span class="yCoords">' +
-          (parseInt(coords[0]) + 1).toString() +
-          '</span>'
-        );
-      else return false;
+        return (parseInt(coords[0]) + 1).toString();
+      else return '';
     },
   },
 };
 </script>
 
 <style>
-.cell {
-  width: 33px;
-  height: 33px;
-  border: 1px solid hsl(0, 0%, 50%);
-  margin: 0;
-  padding: 0;
+@media only screen and (min-width: 1400px) {
+  .ship-types {
+    display: block;
+    position: absolute;
+    top: 24%;
+    left: 78%;
+    box-sizing: border-box;
+  }
+}
+
+@media only screen and (max-width: 1399px) {
+  .ship-types {
+    display: block;
+    position: absolute;
+    top: 24%;
+    left: 80%;
+    box-sizing: border-box;
+  }
+}
+
+@media only screen and (max-width: 1270px) {
+  .ship-types {
+    display: block;
+    position: absolute;
+    top: 24%;
+    left: 83%;
+    box-sizing: border-box;
+  }
+}
+
+@media only screen and (max-width: 1160px) {
+  .ship-types {
+    display: block;
+    position: absolute;
+    top: 24%;
+    left: 86%;
+    box-sizing: border-box;
+  }
+}
+@media only screen and (max-width: 1030px) {
+  .ship-types {
+    display: block;
+    position: absolute;
+    top: 24%;
+    left: 89%;
+    box-sizing: border-box;
+  }
+}
+
+@media only screen and (max-width: 1050px) {
+  .ship-types {
+    display: block;
+    position: absolute;
+    top: 24%;
+    left: 89%;
+    box-sizing: border-box;
+  }
+}
+
+@media only screen and (max-width: 960px) {
+  .ship-types {
+    display: block;
+    position: absolute;
+    top: 24%;
+    left: 68%;
+    box-sizing: border-box;
+  }
+}
+
+@media only screen and (max-width: 890px) {
+  .ship-types {
+    display: block;
+    position: absolute;
+    top: 24%;
+    left: 71%;
+    box-sizing: border-box;
+  }
+}
+@media only screen and (max-width: 752px) {
+  .ship-types {
+    display: block;
+    position: absolute;
+    top: 24%;
+    left: 74%;
+    box-sizing: border-box;
+  }
+}
+
+@media only screen and (max-width: 660px) {
+  .ship-types {
+    display: block;
+    position: absolute;
+    top: 24%;
+    left: 77%;
+    box-sizing: border-box;
+  }
+}
+@media only screen and (max-width: 856px) {
+  .ship-types {
+    display: block;
+    position: absolute;
+    top: 24%;
+    left: 82%;
+    box-sizing: border-box;
+  }
+}
+
+@media only screen and (max-width: 415px) {
+  .ship-types {
+    display: none;
+    position: absolute;
+    top: 24%;
+    left: 88%;
+    box-sizing: border-box;
+  }
+}
+
+.ship-little:last-child {
+  margin-right: 0;
+}
+.ship-little {
+  margin: 0 7px 0;
+  margin-right: 7px;
+  display: inline-block;
+}
+.ship-part {
+  width: 7px;
+  height: 7px;
+  margin: 0 1px 0 0;
+  background: #c5c5ff;
+  display: block;
+  float: left;
+}
+
+.ship-part-killed {
+  background: #ffaeae;
+  display: block;
+  float: left;
+  width: 7px;
+  height: 7px;
+  margin: 0 1px 0 0;
+}
+
+.hit {
+  background-color: red;
+  opacity: 0.7;
+}
+
+.miss::before {
+  position: absolute;
+  height: 4px;
+  width: 4px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  content: '';
+  background-color: rgb(51, 51, 51);
+  border-radius: 50%;
+}
+
+.miss {
+  position: relative;
+  box-shadow: rgb(180, 180, 255) 1px 0px 0px 0px,
+    rgb(180, 180, 255) 0px 1px 0px 0px, rgb(180, 180, 255) 1px 1px 0px 0px,
+    rgb(180, 180, 255) 1px 0px 0px 0px inset,
+    rgb(180, 180, 255) 0px 1px 0px 0px inset;
+  background-color: rgb(238, 238, 238);
+}
+
+.targetCursor {
+  cursor: cell;
+}
+
+.PC > .hover {
+  border: 2px solid #40bf44;
+  background: rgba(64, 191, 68, 0.05);
+  width: 2em;
+  height: 2em;
+  content: '';
+  display: block;
+  z-index: 2;
 }
 
 .blue {

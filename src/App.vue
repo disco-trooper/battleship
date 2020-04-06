@@ -4,8 +4,16 @@
       ><the-game
         :player-board="playerBoard"
         :computer-board="computerBoard"
-        :placing-ships="placingShips"
-        @shipMove="log"
+        :game-flow="gameFlow"
+        :player="player"
+        :computer="computer"
+        @resetGame="
+          computerBoard = gameBoardFactory();
+          playerBoard = gameBoardFactory();
+          placeShips(playerBoard);
+          placeShips(computerBoard);
+          removeHitNMissClasses();
+        "
       ></the-game
     ></v-content>
   </v-app>
@@ -20,7 +28,13 @@ export default {
   components: { TheGame },
   data() {
     return {
-      placingShips: true,
+      gameFlow: {
+        playerTurn: false,
+        placingShips: true,
+        gameStarted: false,
+        playerWin: false,
+        computerWin: false,
+      },
       computerBoard: this.gameBoardFactory(),
       playerBoard: this.gameBoardFactory(),
       player: {
@@ -50,11 +64,6 @@ export default {
     this.placeShips(this.computerBoard);
   },
   methods: {
-    log() {
-      console.log(this.playerBoard);
-      console.log(this.computerBoard);
-    },
-
     shipFactory(length, positions, board = 0) {
       return {
         id: board.ships.length,
@@ -70,15 +79,13 @@ export default {
         hit(position) {
           if (this.positions.includes(position))
             this.hitPositions.push(position);
+          this.hitPositions = [...new Set(this.hitPositions)];
         },
         isSunk() {
           let that = this;
-          return (
-            that.positions.length === that.hitPositions.length &&
-            positions.sort().every(function (value, index) {
-              return value === that.hitPositions.sort()[index];
-            })
-          );
+          that.positions = that.positions.sort((a, b) => a - b);
+          that.hitPositions = that.hitPositions.sort((a, b) => a - b);
+          return that.positions.length === that.hitPositions.length;
         },
       };
     },
@@ -86,20 +93,21 @@ export default {
     gameBoardFactory() {
       return {
         ships: [],
-        missed: [],
+        missedHits: [],
+        takenHits: [],
         receiveAttack(position) {
           for (let ship in this.ships) {
             let currentShip = this.ships[ship];
             if (currentShip.positions.includes(position)) {
               currentShip.hit(position);
-              if (currentShip.isSunk() === true) {
-                return 'sunk';
-              } else {
-                return 'not sunk';
-              }
+              this.takenHits.push(position);
+              this.takenHits = [...new Set(this.takenHits)];
+              return currentShip.isSunk();
             }
           }
-          this.missed.push(position);
+          this.missedHits.push(position);
+          this.missedHits = [...new Set(this.missedHits)];
+          return 'missed';
         },
         placeShip(ship) {
           this.ships.push(ship);
@@ -133,6 +141,13 @@ export default {
         board.ships = [];
         this.placeShips(board);
       }
+      return;
+    },
+    removeHitNMissClasses() {
+      let cells = document.getElementsByClassName('gridCell');
+      cells.forEach((cell) => {
+        cell.className = 'gridCell';
+      });
     },
 
     generateShipCoordinates(length, board) {

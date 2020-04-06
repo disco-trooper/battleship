@@ -11,11 +11,11 @@ describe('App.vue', () => {
     expect(wrapper.isVueInstance()).toBe(true);
   });
 
-  it('getShipCoordinates() returns coordinates', () => {
+  it('generateShipCoordinates() returns coordinates', () => {
     let board = wrapper.vm.gameBoardFactory();
     let ship = wrapper.vm.shipFactory(
       5,
-      wrapper.vm.getShipCoordinates(5, board),
+      wrapper.vm.generateShipCoordinates(5, board),
       board
     );
     board.placeShip(ship);
@@ -61,7 +61,8 @@ describe('App.vue', () => {
   describe('gameBoardFactory()', () => {
     it('returns game board', () => {
       let board = wrapper.vm.gameBoardFactory();
-      expect(board).toHaveProperty('missed');
+      expect(board).toHaveProperty('missedHits');
+      expect(board).toHaveProperty('takenHits');
       expect(board).toHaveProperty('ships');
       expect(board).toHaveProperty('placeShip');
       expect(board).toHaveProperty('receiveAttack');
@@ -78,8 +79,8 @@ describe('App.vue', () => {
       let board = wrapper.vm.gameBoardFactory();
       let ship = wrapper.vm.shipFactory(1, ['22', '23'], board);
       board.placeShip(ship);
-      expect(board.receiveAttack('22')).toBe('not sunk');
-      expect(board.missed).toEqual([]);
+      expect(board.receiveAttack('22')).toBe(false);
+      expect(board.missedHits).toEqual([]);
       expect(board.ships[0].hitPositions).toEqual(['22']);
       expect(board.ships[0].isSunk()).toBe(false);
     });
@@ -90,16 +91,16 @@ describe('App.vue', () => {
       board.placeShip(ship);
       board.receiveAttack('24');
       expect(board.ships[0].hitPositions).toEqual([]);
-      expect(board.missed).toEqual(['24']);
+      expect(board.missedHits).toEqual(['24']);
     });
 
     it('sinks ship', () => {
       let board = wrapper.vm.gameBoardFactory();
       let ship = wrapper.vm.shipFactory(1, ['22', '23'], board);
       board.placeShip(ship);
-      expect(board.receiveAttack('22')).toBe('not sunk');
-      expect(board.receiveAttack('23')).toBe('sunk');
-      expect(board.missed).toEqual([]);
+      expect(board.receiveAttack('22')).toBe(false);
+      expect(board.receiveAttack('23')).toBe(true);
+      expect(board.missedHits).toEqual([]);
       expect(board.ships[0].hitPositions).toEqual(['22', '23']);
       expect(board.ships[0].isSunk()).toBe(true);
     });
@@ -117,7 +118,7 @@ describe('App.vue', () => {
       let player = wrapper.vm.player;
       board.placeShip(ship);
       player.hit('22', board);
-      expect(board.missed).toEqual([]);
+      expect(board.missedHits).toEqual([]);
       expect(board.ships[0].hitPositions).toEqual(['22'], board);
       expect(board.ships[0].isSunk()).toBe(false);
     });

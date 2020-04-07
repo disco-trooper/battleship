@@ -1,29 +1,31 @@
-# battleship
+<h1 align="center">battleship</h1>
+<p>
+  <a href="https://www.npmjs.com/package/battleship" target="_blank">
+    <img alt="Version" src="https://img.shields.io/npm/v/battleship.svg">
+  </a>
+  <a href="#" target="_blank">
+    <img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg" />
+  </a>
+</p>
 
-## Project setup
-```
+> A simple battleship game
+
+### ✨ [Demo](https://disco-trooper.github.io/battleship/)
+
+## Install
+
+```sh
 npm install
 ```
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
+## Run tests
 
-### Compiles and minifies for production
-```
-npm run build
-```
-
-### Run your unit tests
-```
+```sh
 npm run test:unit
 ```
 
-### Lints and fixes files
-```
-npm run lint
-```
+## Author
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+👤 **disco-trooper**
+
+* Github: [@disco-trooper](https://github.com/disco-trooper)

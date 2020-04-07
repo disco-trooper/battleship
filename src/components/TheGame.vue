@@ -207,7 +207,7 @@ export default {
     },
   },
   data() {
-    return {};
+    return { preHitPlayerMissedLength: '', afterHitPlayerMissedLength: '' };
   },
   mounted() {
     // Drag 'n Snapping
@@ -373,7 +373,9 @@ export default {
         if (preHitComputerMissedLength !== afterHitComputerMissedLength) {
           document.getElementById(coordinates).classList.add('miss');
           this.gameFlow.playerTurn = false;
-          this.computerAttack(this.computer, this.gameFlow, this.playerBoard);
+          setTimeout(() => {
+            this.computerAttack(this.computer, this.gameFlow, this.playerBoard);
+          }, 1000);
           return;
         }
         document.getElementById(coordinates).classList.add('hit');
@@ -394,10 +396,10 @@ export default {
       }
     },
     computerAttack(computerObject, gameFlowObject, board) {
-      const preHitPlayerMissedLength = board.missedHits.length;
+      this.preHitPlayerMissedLength = board.missedHits.length;
       computerObject.makeAttack(board);
-      const afterHitPlayerMissedLength = board.missedHits.length;
-      if (preHitPlayerMissedLength !== afterHitPlayerMissedLength) {
+      this.afterHitPlayerMissedLength = board.missedHits.length;
+      if (this.preHitPlayerMissedLength !== this.afterHitPlayerMissedLength) {
         document
           .getElementById('P' + board.missedHits[board.missedHits.length - 1])
           .classList.add('miss');
@@ -411,7 +413,9 @@ export default {
         this.gameFlow.computerWin = true;
         return;
       }
-      return this.computerAttack(computerObject, gameFlowObject, board);
+      return setTimeout(() => {
+        this.computerAttack(computerObject, gameFlowObject, board);
+      }, 1000);
     },
 
     toggleHoverClass(boolean, event) {

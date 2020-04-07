@@ -7,13 +7,7 @@
         :game-flow="gameFlow"
         :player="player"
         :computer="computer"
-        @resetGame="
-          computerBoard = gameBoardFactory();
-          playerBoard = gameBoardFactory();
-          placeShips(playerBoard);
-          placeShips(computerBoard);
-          removeClasses();
-        "
+        @resetGame="resetGame"
       ></the-game
     ></v-content>
   </v-app>
@@ -43,17 +37,179 @@ export default {
         },
       },
       computer: {
+        enemySunkShips: [],
         previousAttacks: [],
+        successfulAttacks: [],
+        adjacentShooting: {
+          continue: false,
+          tryNext: '',
+          lastTried: '',
+        },
         makeAttack(board) {
-          let attack =
-            Math.floor(Math.random() * 10).toString() +
-            Math.floor(Math.random() * 10).toString();
-          while (this.previousAttacks.includes(attack)) {
+          // Block for adjacent attacks
+          let attack;
+          if (this.adjacentShooting.continue) {
+            if (
+              this.adjacentShooting.tryNext === '' ||
+              this.adjacentShooting.tryNext === 'left'
+            ) {
+              if (
+                parseInt(
+                  this.successfulAttacks[this.successfulAttacks.length - 1][1]
+                ) > 0
+              ) {
+                attack =
+                  this.successfulAttacks[this.successfulAttacks.length - 1][0] +
+                  (
+                    parseInt(
+                      this.successfulAttacks[
+                        this.successfulAttacks.length - 1
+                      ][1]
+                    ) - 1
+                  ).toString();
+                this.adjacentShooting.lastTried = 'left';
+                if (this.previousAttacks.includes(attack))
+                  this.adjacentShooting.tryNext = 'right';
+              } else {
+                this.adjacentShooting.tryNext = 'right';
+                this.successfulAttacks = [this.successfulAttacks[0]];
+              }
+            }
+            if (this.adjacentShooting.tryNext === 'right') {
+              if (
+                parseInt(
+                  this.successfulAttacks[this.successfulAttacks.length - 1][1]
+                ) < 9
+              ) {
+                attack =
+                  this.successfulAttacks[this.successfulAttacks.length - 1][0] +
+                  (
+                    parseInt(
+                      this.successfulAttacks[
+                        this.successfulAttacks.length - 1
+                      ][1]
+                    ) + 1
+                  ).toString();
+                this.adjacentShooting.lastTried = 'right';
+                if (this.previousAttacks.includes(attack))
+                  this.adjacentShooting.tryNext = 'top';
+              } else {
+                this.adjacentShooting.tryNext = 'top';
+                this.successfulAttacks = [this.successfulAttacks[0]];
+              }
+            }
+            if (this.adjacentShooting.tryNext === 'top') {
+              if (
+                parseInt(
+                  this.successfulAttacks[this.successfulAttacks.length - 1][0]
+                ) > 0
+              ) {
+                attack =
+                  (
+                    parseInt(
+                      this.successfulAttacks[
+                        this.successfulAttacks.length - 1
+                      ][0]
+                    ) - 1
+                  ).toString() +
+                  this.successfulAttacks[this.successfulAttacks.length - 1][1];
+                this.adjacentShooting.lastTried = 'top';
+                if (this.previousAttacks.includes(attack))
+                  this.adjacentShooting.tryNext = 'bottom';
+              } else {
+                this.adjacentShooting.tryNext = 'bottom';
+                this.successfulAttacks = [this.successfulAttacks[0]];
+              }
+            }
+            if (
+              this.adjacentShooting.tryNext === 'bottom' &&
+              parseInt(
+                this.successfulAttacks[this.successfulAttacks.length - 1][0]
+              ) < 9
+            ) {
+              attack =
+                (
+                  parseInt(
+                    this.successfulAttacks[this.successfulAttacks.length - 1][0]
+                  ) + 1
+                ).toString() +
+                this.successfulAttacks[this.successfulAttacks.length - 1][1];
+              this.adjacentShooting.lastTried = 'bottom';
+              if (this.previousAttacks.includes(attack)) {
+                attack =
+                  Math.floor(Math.random() * 10).toString() +
+                  Math.floor(Math.random() * 10).toString();
+                while (this.previousAttacks.includes(attack)) {
+                  attack =
+                    Math.floor(Math.random() * 10).toString() +
+                    Math.floor(Math.random() * 10).toString();
+                }
+                this.successfulAttacks = [];
+                this.adjacentShooting.continue = false;
+                this.adjacentShooting.lastTried = '';
+                this.adjacentShooting.tryNext = '';
+              }
+            }
+          } else {
             attack =
               Math.floor(Math.random() * 10).toString() +
               Math.floor(Math.random() * 10).toString();
+            while (this.previousAttacks.includes(attack)) {
+              attack =
+                Math.floor(Math.random() * 10).toString() +
+                Math.floor(Math.random() * 10).toString();
+            }
           }
+
+          const preHitPlayerMissedLength = board.missedHits.length;
           board.receiveAttack(attack);
+          const afterHitPlayerMissedLength = board.missedHits.length;
+          if (
+            preHitPlayerMissedLength === afterHitPlayerMissedLength &&
+            this.adjacentShooting.continue
+          ) {
+            this.adjacentShooting.tryNext = this.adjacentShooting.lastTried;
+            this.successfulAttacks.push(attack);
+          }
+          if (
+            preHitPlayerMissedLength !== afterHitPlayerMissedLength &&
+            this.adjacentShooting.continue
+          ) {
+            if (this.adjacentShooting.lastTried === 'left') {
+              this.adjacentShooting.tryNext = 'right';
+              this.successfulAttacks = [this.successfulAttacks[0]];
+            } else if (this.adjacentShooting.lastTried === 'right') {
+              this.adjacentShooting.tryNext = 'top';
+              this.successfulAttacks = [this.successfulAttacks[0]];
+            } else if (this.adjacentShooting.lastTried === 'top') {
+              this.adjacentShooting.tryNext = 'bottom';
+              this.successfulAttacks = [this.successfulAttacks[0]];
+            } else if (this.adjacentShooting.lastTried === 'bottom') {
+              this.successfulAttacks = [];
+              this.adjacentShooting.continue = false;
+              this.adjacentShooting.lastTried = '';
+              this.adjacentShooting.tryNext = '';
+            }
+          }
+          if (
+            preHitPlayerMissedLength === afterHitPlayerMissedLength &&
+            !this.adjacentShooting.continue
+          ) {
+            this.successfulAttacks.push(attack);
+            this.adjacentShooting.continue = true;
+          }
+          for (let ship in board.ships) {
+            if (
+              board.ships[ship].isSunk() &&
+              !this.enemySunkShips.includes(parseInt(board.ships[ship].id))
+            ) {
+              this.enemySunkShips.push(board.ships[ship].id);
+              this.successfulAttacks = [];
+              this.adjacentShooting.continue = false;
+              this.adjacentShooting.lastTried = '';
+              this.adjacentShooting.tryNext = '';
+            }
+          }
           this.previousAttacks.push(attack);
         },
       },
@@ -64,6 +220,19 @@ export default {
     this.placeShips(this.computerBoard);
   },
   methods: {
+    resetGame() {
+      this.computerBoard = this.gameBoardFactory();
+      this.playerBoard = this.gameBoardFactory();
+      this.placeShips(this.playerBoard);
+      this.placeShips(this.computerBoard);
+      this.removeClasses();
+      this.computer.enemySunkShips = [];
+      this.computer.previousAttacks = [];
+      this.computer.successfulAttacks = [];
+      this.computer.adjacentShooting.continue = false;
+      this.computer.adjacentShooting.tryNext = '';
+      this.computer.adjacentShooting.lastTried = '';
+    },
     shipFactory(length, positions, board = 0) {
       return {
         id: board.ships.length,

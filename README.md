@@ -6,7 +6,7 @@
   </a>
 </p>
 
-> A simple battleship game
+> A simple battleship game. Project made as a part of [The Odin Project's curriculum](https://www.theodinproject.com/courses/javascript/lessons/battleship).
 
 ### ✨ [Demo](https://disco-trooper.github.io/battleship/)
 
